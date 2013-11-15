@@ -39,6 +39,22 @@
 	        return walk(oModel, oThat || {});
 	    };
 
+	    ko.bindingHandlers.using = {
+	        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+	        	var oV = valueAccessor();
+
+	        	if (typeof(oV) !== "object" || oV === null) {
+	                throw new Error("using binding requires valid object");
+	        	}
+
+	        	ko.applyBindingsToDescendants(bindingContext.createChildContext(oV), element);
+	        	
+	        	return { "controlsDescendantBindings": true };
+	        }
+	    };
+
+	    ko.virtualElements.allowedBindings.using = true;
+	    
 	    ko.Controller = function (oItem) {
 	    	this.updating = ko.observable(false);
 	    	this.nowfocus = ko.observable(false);
@@ -58,7 +74,7 @@
 	    		}
 	    	}
 
-			this.item = ko.observable(oItem);
+			this.item = oItem;
 	    };
 	
 		ko.Controller.prototype.change = function (oItem) {
@@ -79,7 +95,7 @@
 	    		}
 	    	}
 
-	    	this.item(oItem);
+	    	this.item = oItem;
 		};
 	
 		ko.Controller.prototype.failed = function (sError) {
@@ -96,10 +112,13 @@
 		ko.Controller.prototype.revert = function () {
 			for (var sProp in this.keep) {
 				if (typeof(this.keep[sProp]) === "string") {
-					this.item()[sProp](this.keep[sProp]);
+					this.item[sProp](this.keep[sProp]);
 				}
 			}
 
+			this.errormsg("");
+			
+			this.invoking(false);
 			this.haserror(false);
 			this.updating(false);
 			this.nowfocus(false);
