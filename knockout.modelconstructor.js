@@ -110,7 +110,12 @@
 	    		}
 	    	}
 
-			this.item = oItem;
+	    	if (ko.isObservable(oItem) === true) {
+	    		this.item = oItem();
+	    	}
+	    	else {
+	    		this.item = oItem;
+	    	}
 	    };
 	
 		ko.Controller.prototype.change = function (oItem) {
