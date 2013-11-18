@@ -60,7 +60,12 @@
     							}
     						}
     						
-    						oWrap[oValue.as] = oValue.data[i];
+    						if (typeof(oValue.data[i][oValue.as]) !== "undefined") {
+    							oWrap[oValue.as] = oValue.data[i][oValue.as];
+    						}
+    						else {
+        						oWrap[oValue.as] = oValue.data[i];
+    						}
     						
     						oValue.data[i] = oWrap;
     					}
