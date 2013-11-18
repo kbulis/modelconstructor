@@ -39,58 +39,29 @@
 	        return walk(oModel, oThat || {});
 	    };
 
-	    ko.bindingHandlers.foreachAndModel = {
-    		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-    			return ko.bindingHandlers.foreach.init(element, valueAccessor, allBindings, viewModel, bindingContext);
-    		}
-    		,
-    		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-    			var oValue = valueAccessor();
-    			
-    			if (typeof(oValue.data) !== "undefined" && typeof(oValue.as) !== "undefined") {
-    				if (typeof(oValue.data.length) === "number") {
-    					for (var i = 0; i < oValue.data.length; ++i) {
-    						var oWrap = {};
-
-    						for (var p in viewModel) {
-    							var sType = typeof(viewModel[p]);
-    							
-    							if (sType === "function" || sType === "object" || sType === "string" || sType === "number") {
-    								oWrap[p] = viewModel[p];
-    							}
-    						}
-    						
-    						if (typeof(oValue.data[i][oValue.as]) !== "undefined") {
-    							oWrap[oValue.as] = oValue.data[i][oValue.as];
-    						}
-    						else {
-        						oWrap[oValue.as] = oValue.data[i];
-    						}
-    						
-    						oValue.data[i] = oWrap;
-    					}
-    					
-    					oValue.as = undefined;
-    				}
-    			}
-    			
-    			return ko.bindingHandlers.foreach.update(element, function () { return oValue; }, allBindings, viewModel, bindingContext);
-    		}
-    	};
-
-    	ko.virtualElements.allowedBindings.foreachAndModel = true;
-	    
 	    ko.bindingHandlers.using = {
 	        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-	        	var oV = valueAccessor();
+	            var oValue = valueAccessor(), oWrapped = { outer: viewModel };
 
-	        	if (typeof(oV) !== "object" || oV === null) {
+	            if (typeof(oValue) !== "object" || oValue === null) {
 	                throw new Error("using binding requires valid object");
-	        	}
+	            }
 
-	        	ko.applyBindingsToDescendants(bindingContext.createChildContext(oV), element);
+	            for (var p in oValue) {
+	                var sType = typeof(oValue[p]);
+
+	                if (p === "outer") {
+	                    continue;
+	                }
+                    
+	                if (sType === "function" || sType === "object" || sType === "string" || sType === "number") {
+                            oWrapped[p] = oValue[p];
+	                }
+	            }
+
+	            ko.applyBindingsToDescendants(bindingContext.createChildContext(oWrapped), element);
 	        	
-	        	return { "controlsDescendantBindings": true };
+	            return { "controlsDescendantBindings": true };
 	        }
 	    };
 
