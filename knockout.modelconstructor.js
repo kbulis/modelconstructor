@@ -39,6 +39,42 @@
 	        return walk(oModel, oThat || {});
 	    };
 
+	    ko.bindingHandlers.foreachAndModel = {
+    		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+    			return ko.bindingHandlers.foreach.init(element, valueAccessor, allBindings, viewModel, bindingContext);
+    		}
+    		,
+    		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+    			var oValue = valueAccessor();
+    			
+    			if (typeof(oValue.data) !== "undefined" && typeof(oValue.as) !== "undefined") {
+    				if (typeof(oValue.data.length) === "number") {
+    					for (var i = 0; i < oValue.data.length; ++i) {
+    						var oWrap = {};
+
+    						for (var p in viewModel) {
+    							var sType = typeof(viewModel[p]);
+    							
+    							if (sType === "function" || sType === "object" || sType === "string" || sType === "number") {
+    								oWrap[p] = viewModel[p];
+    							}
+    						}
+    						
+    						oWrap[oValue.as] = oValue.data[i];
+    						
+    						oValue.data[i] = oWrap;
+    					}
+    					
+    					oValue.as = undefined;
+    				}
+    			}
+    			
+    			return ko.bindingHandlers.foreach.update(element, function () { return oValue; }, allBindings, viewModel, bindingContext);
+    		}
+    	};
+
+    	ko.virtualElements.allowedBindings.foreachAndModel = true;
+	    
 	    ko.bindingHandlers.using = {
 	        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
 	        	var oV = valueAccessor();
@@ -54,7 +90,7 @@
 	    };
 
 	    ko.virtualElements.allowedBindings.using = true;
-	    
+
 	    ko.Controller = function (oItem) {
 	    	this.updating = ko.observable(false);
 	    	this.nowfocus = ko.observable(false);
