@@ -41,25 +41,9 @@
 
 	    ko.bindingHandlers.using = {
 	        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-	            var oValue = valueAccessor(), oWrapped = { outer: viewModel };
-
-	            if (typeof(oValue) !== "object" || oValue === null) {
-	                throw new Error("using binding requires valid object");
-	            }
-
-	            for (var p in oValue) {
-	                var sType = typeof(oValue[p]);
-
-	                if (p === "outer") {
-	                    continue;
-	                }
-                    
-	                if (sType === "function" || sType === "object" || sType === "string" || sType === "number") {
-                            oWrapped[p] = oValue[p];
-	                }
-	            }
-
-	            ko.applyBindingsToDescendants(bindingContext.createChildContext(oWrapped), element);
+	        	bindingContext["outer"] = bindingContext.$parent;
+	        	
+        		ko.applyBindingsToDescendants(bindingContext.createChildContext(valueAccessor()), element);
 	        	
 	            return { "controlsDescendantBindings": true };
 	        }
