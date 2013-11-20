@@ -41,9 +41,7 @@
 
 	    ko.bindingHandlers.using = {
 	        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-	        	bindingContext["outer"] = bindingContext.$parent;
-	        	
-        		ko.applyBindingsToDescendants(bindingContext.createChildContext(valueAccessor()), element);
+        		ko.applyBindingsToDescendants(bindingContext.createChildContext(valueAccessor.call({ e: element, o: bindingContext.$parent})), element);
 	        	
 	            return { "controlsDescendantBindings": true };
 	        }
@@ -124,6 +122,10 @@
 			this.updating(false);
 			this.nowfocus(false);
 		};
+
+		ko.Controller.prototype.halted = function () {
+			this.invoking(false);
+		};		    
 
 		ko.Controller.prototype.update = function () {
 			this.updating(true);
