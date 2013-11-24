@@ -53,6 +53,7 @@
 	    	this.updating = ko.observable(false);
 	    	this.nowfocus = ko.observable(false);
 	    	this.invoking = ko.observable(false);
+	    	this.recorded = ko.observable(false);
 	    	this.haserror = ko.observable(false);
 	    	this.errormsg = ko.observable(false);
 
@@ -72,7 +73,7 @@
 	    		this.item = oItem();
 	    	}
 	    	else {
-	    		this.item = oItem;
+	    		this.item = oItem || {};
 	    	}
 	    };
 	
@@ -81,26 +82,35 @@
 			this.haserror(false);
 			this.nowfocus(false);
 			this.updating(false);
-			
+
 	    	this.keep = {};
-	    	
+
 	    	for (var sProp in oItem) {
 	    		if (typeof(oItem[sProp]) === "function" && typeof(oItem[sProp]["subscribe"]) === "function") {
 	    			var oProp = oItem[sProp]();
-	    			
-	    			if (typeof(oProp) === "string") {
+
+	    			if (typeof(this.item[sProp]) === "undefined") {
+	    				this.item[sProp] = oItem[sProp];
+	    			}
+	    			else
+	    			if (typeof(this.item[sProp]) === "function") {
+	    				this.item[sProp](oProp);
+	    			}
+
+    				if (typeof(oProp) === "string") {
 	    				this.keep[sProp] = oProp;
 	    			}
 	    		}
 	    	}
 
-	    	this.item = oItem;
+	    	this.recorded(true);
 		};
 	
 		ko.Controller.prototype.failed = function (sError) {
 			this.errormsg(sError);
 
 			this.invoking(false);
+			this.recorded(false);
 			this.nowfocus(false);
 	
 			this.haserror(true);
@@ -118,6 +128,7 @@
 			this.errormsg("");
 			
 			this.invoking(false);
+			this.recorded(false);
 			this.haserror(false);
 			this.updating(false);
 			this.nowfocus(false);
